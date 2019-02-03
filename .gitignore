@@ -1,0 +1,5 @@
+data/*
+saved_processed_data/*
+.idea/*
+__pycache__/*
+test_data/*
