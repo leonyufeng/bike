@@ -222,7 +222,7 @@ def merge_trip_station_weather(trip_date_year, station, weather_period_gb):
 
     data_utils.check_df_na(trip_info_gb)
 
-    weather_period_gb.reset_index(inplace=True)
+    weather_period_gb = weather_period_gb.reset_index()
     trip_info_gb = trip_info_gb.reset_index()
 
     data = trip_info_gb[['date', 'hour-period', 's_staID', 'week of year', 'weekday',

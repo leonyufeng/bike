@@ -43,31 +43,41 @@ def ml_main(trip_date_year, station, weather_period_gb, forecast_date, trace_bac
     sites_list = sorted(station_clustered['staID'].unique())
     whole_pred = ml_pipeline.whole_data_forecast(data_train, data_test, station_clustered, sites_list)
 
-    r2 = 0
+    print("finish whole_data_forecast")
 
+    r2 = 0
     try:
         print(f"data_test['trip count']: {data_test['trip count'].shape}, whole_pred shape: {len(whole_pred)}")
-        r2 = r2_score(data_test['trip count'], whole_pred)
+        r2 = r2_score(whole_pred['trip count'], whole_pred['pred'])
         print(f"r2: {r2}")
     except:
         print("r2 score calculation error!")
-        print(f"whole_pred shape: {len(whole_pred)}, data_test shape: {data_test.shape}")
+        print(f"whole_pred shape: {len(whole_pred)}, data_test shape: {data_test['trip count'].shape}")
 
     figure(num=None, figsize=(20, 10), dpi=80, facecolor='w', edgecolor='k')
-    plt.plot(range(len(data_test['trip count'])), data_test['trip count'], "b*")
-    plt.plot(range(len(data_test['trip count'])), whole_pred, "r.")
+    plt.plot(range(len(whole_pred['trip count'])), whole_pred['trip count'], "b*")
+    plt.plot(range(len(whole_pred['pred'])), whole_pred['pred'], "r.")
     plt.show()
 
     return whole_pred, r2
 
 
 if __name__ == "__main__":
-    forecast_end_date = '2016-08-01'
+    forecast_end_date = '2016-08-01'  # The last date to forecast.
+    # How many days to forecast.
+    # 5 means forecast forecast_end_date - 4 days to forecast_end_date.
+    # 1 means forecast forecast_end_date. For day by day forest, set to 1
     process_days = 5
+
     trace_back_days = 365
     test_days = 1
-    n_clusters = 2
-    load_processed_data = False
+
+    # number of clustering
+    n_clusters = 32
+
+    # For first time run or day by day forest, set to True
+    # For performance test second or later run, set to False
+    load_processed_data = True
 
     print("Start data cleansing")
 
@@ -104,9 +114,10 @@ if __name__ == "__main__":
     all_r2_score = []
     for forecast_date in forecast_date_range:
         print(f"Current forecast date: {forecast_date}")
-        whole_pred, r2_score = ml_main(trip_date_year, station, weather_period_gb, forecast_date, trace_back_days, test_days, n_clusters)
+        whole_pred, r2_score = ml_main(trip_date_year, station, weather_period_gb, forecast_date, trace_back_days,
+                                       test_days, n_clusters)
         print(f"r2: {r2_score}")
         all_predictions.append(whole_pred)
         all_r2_score.append(r2_score)
 
-    print(f"Average r2: {sum(all_r2_score)/len(all_r2_score)}")
+    print(f"Average r2: {sum(all_r2_score) / len(all_r2_score)}")
